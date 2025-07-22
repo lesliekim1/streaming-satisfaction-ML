@@ -9,7 +9,9 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import GridSearchCV
 import numpy as np
 
-
+# Purpose: Use random forest pipeline to do grid search.
+# Input: none
+# Output: best hyperparameter result
 def rf_train():
     pipe_rf = Pipeline([
         ('rf', RandomForestClassifier(random_state=1))
@@ -31,7 +33,9 @@ def rf_train():
 
     return searchRF
 
-
+# Purpose: use logisitic regression pipeline to do grid search.
+# Input: none
+# Output: best hyperparameter result
 def log_train():
     pipe_log = Pipeline([
         ('ss', StandardScaler()),
@@ -57,7 +61,9 @@ def log_train():
 
     return searchLR
 
-
+# Purpose: Output the confusion matrix and classfication report of the final model.
+# Input: final model, test features, test labels
+# Output: confusion matrix and classification report
 def test_final_model(best_model, X_test, y_test):
     y_pred = best_model.predict(X_test)
     confmat = confusion_matrix(y_true=y_test, y_pred=y_pred)
@@ -66,7 +72,9 @@ def test_final_model(best_model, X_test, y_test):
     print("Classification Report:")
     print(metrics.classification_report(y_test, y_pred))
 
-
+# Purpose: Run the program.
+# Input: none 
+# Output: none
 def main():
     df = pd.read_csv("processed_stream.csv", skipinitialspace=True)
 
@@ -76,6 +84,7 @@ def main():
 
     X_train, X_test, y_train, y_test = train_test_split(data, targets, stratify=targets, test_size=0.2, random_state=42)
 
+    # Run first pipeline on random forest
     searchRF = rf_train()
     searchRF.fit(X_train, y_train)
 
@@ -85,6 +94,18 @@ def main():
     print("----------")
 
     test_final_model(searchRF.best_estimator_, X_test, y_test)
+
+    print()
+    # Run second pipeline on logisitic regression
+    searchLOG = log_train()
+    searchLOG.fit(X_train, y_train)
+
+    print("\n----------")
+    print(f"Logisitic Regression best f1-score: {searchLOG.best_score_}")
+    print(f"Logistic Regression best params: {searchLOG.best_params_}")
+    print("----------")
+
+    test_final_model(searchLOG.best_estimator_, X_test, y_test)
 
 main()
 
