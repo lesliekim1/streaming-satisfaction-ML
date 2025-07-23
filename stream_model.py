@@ -33,7 +33,7 @@ def rf_train():
 
     return searchRF
 
-# Purpose: use logisitic regression pipeline to do grid search.
+# Purpose: use logistic regression pipeline to do grid search.
 # Input: none
 # Output: best hyperparameter result
 def log_train():
@@ -61,13 +61,41 @@ def log_train():
 
     return searchLR
 
-# Purpose: Output the confusion matrix and classfication report of the final model.
+# Purpose: Output best model's f1-score and hyperparameters for each algorithm.
+# Input: searchRF, searchLOG
+# Output: print best f1-scores and parameters
+def output_best_score_and_params(searchRF, searchLOG):
+    print(f"Random Forest best f1-score: {searchRF.best_score_}")
+    print(f"Random Forest best params: {searchRF.best_params_}")
+    print()
+    print(f"Logistic Regression best f1-score: {searchLOG.best_score_}")
+    print(f"Logistic Regression best params: {searchLOG.best_params_}")
+
+# Purpose: Compare two models and pick the best one based on f1-score.
+# Input: searchRF, searchLOG
+# Output: best_model
+def find_best_model(searchRF, searchLOG):
+    if searchRF.best_score_ > searchLOG.best_score_:
+        best_model = searchRF.best_estimator_
+        best_model_name = "Random Forest"
+        best_params = searchRF.best_params_
+    else:
+        best_model = searchLOG.best_estimator_
+        best_model_name = "Logistic Regression"
+        best_params = searchLOG.best_params_
+
+    print(f"\nFinal Model: {best_model_name}")
+    print(f"Best hyperparameters: {best_params}")
+
+    return best_model
+
+# Purpose: Output the confusion matrix and classification report of the final model.
 # Input: final model, test features, test labels
 # Output: confusion matrix and classification report
 def test_final_model(best_model, X_test, y_test):
     y_pred = best_model.predict(X_test)
     confmat = confusion_matrix(y_true=y_test, y_pred=y_pred)
-    print("Confusion Matrix:")
+    print("\nConfusion Matrix:")
     print(confmat)
     print("Classification Report:")
     print(metrics.classification_report(y_test, y_pred))
@@ -84,28 +112,22 @@ def main():
 
     X_train, X_test, y_train, y_test = train_test_split(data, targets, stratify=targets, test_size=0.2, random_state=42)
 
-    # Run first pipeline on random forest
+    # Run random forest pipeline and grid search
     searchRF = rf_train()
     searchRF.fit(X_train, y_train)
 
-    print("\n----------")
-    print(f"Random Forest best f1-score: {searchRF.best_score_}")
-    print(f"Random Forest best params: {searchRF.best_params_}")
-    print("----------")
-
-    test_final_model(searchRF.best_estimator_, X_test, y_test)
-
-    print()
-    # Run second pipeline on logisitic regression
+    # Run logistic regression pipeline and grid search
     searchLOG = log_train()
     searchLOG.fit(X_train, y_train)
 
     print("\n----------")
-    print(f"Logisitic Regression best f1-score: {searchLOG.best_score_}")
-    print(f"Logistic Regression best params: {searchLOG.best_params_}")
+    output_best_score_and_params(searchRF, searchLOG)
     print("----------")
 
-    test_final_model(searchLOG.best_estimator_, X_test, y_test)
+    # Determine best model
+    best_model = find_best_model(searchRF, searchLOG)
+
+    # Test final model
+    test_final_model(best_model, X_test, y_test)
 
 main()
-
