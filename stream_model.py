@@ -100,7 +100,7 @@ def test_final_model(best_model, X_test, y_test):
     print("Classification Report:")
     print(metrics.classification_report(y_test, y_pred))
 
-# Purpose: Run the program.
+# Purpose: Run the program to do analysis on streaming satisfaction survey.
 # Input: none 
 # Output: none
 def main():
