@@ -23,15 +23,15 @@ def rf_train():
         'rf__min_samples_split': [2, 5, 10]
     }
 
-    searchRF = GridSearchCV(estimator=pipe_rf,
-                            param_grid=rf_param_grid,
-                            scoring='f1_weighted',
-                            cv=2,
-                            n_jobs=6,
-                            refit=True,
-                            verbose=2)
+    search_rf = GridSearchCV(estimator=pipe_rf,
+                             param_grid=rf_param_grid,
+                             scoring='f1_weighted',
+                             cv=2,
+                             n_jobs=6,
+                             refit=True,
+                             verbose=2)
 
-    return searchRF
+    return search_rf
 
 # Purpose: use logistic regression pipeline to do grid search.
 # Input: none
@@ -51,38 +51,38 @@ def log_train():
         'log__max_iter': [1000]
     }]
 
-    searchLR = GridSearchCV(estimator=pipe_log,
-                            param_grid=log_param_grid,
-                            scoring='f1_weighted',
-                            cv=2,
-                            n_jobs=6,
-                            refit=True,
-                            verbose=2)
+    search_log = GridSearchCV(estimator=pipe_log,
+                              param_grid=log_param_grid,
+                              scoring='f1_weighted',
+                              cv=2,
+                              n_jobs=6,
+                              refit=True,
+                              verbose=2)
 
-    return searchLR
+    return search_log
 
 # Purpose: Output best model's f1-score and hyperparameters for each algorithm.
-# Input: searchRF, searchLOG
+# Input: search_rf, search_log
 # Output: print best f1-scores and parameters
-def output_best_score_and_params(searchRF, searchLOG):
-    print(f"Random Forest best f1-score: {searchRF.best_score_}")
-    print(f"Random Forest best params: {searchRF.best_params_}")
+def output_best_score_and_params(search_rf, search_log):
+    print(f"Random Forest best f1-score: {search_rf.best_score_}")
+    print(f"Random Forest best params: {search_rf.best_params_}")
     print()
-    print(f"Logistic Regression best f1-score: {searchLOG.best_score_}")
-    print(f"Logistic Regression best params: {searchLOG.best_params_}")
+    print(f"Logistic Regression best f1-score: {search_log.best_score_}")
+    print(f"Logistic Regression best params: {search_log.best_params_}")
 
 # Purpose: Compare two models and pick the best one based on f1-score.
-# Input: searchRF, searchLOG
+# Input: search_rf, search_log
 # Output: best_model
-def find_best_model(searchRF, searchLOG):
-    if searchRF.best_score_ > searchLOG.best_score_:
-        best_model = searchRF.best_estimator_
+def find_best_model(search_rf, search_log):
+    if search_rf.best_score_ > search_log.best_score_:
+        best_model = search_rf.best_estimator_
         best_model_name = "Random Forest"
-        best_params = searchRF.best_params_
+        best_params = search_rf.best_params_
     else:
-        best_model = searchLOG.best_estimator_
+        best_model = search_log.best_estimator_
         best_model_name = "Logistic Regression"
-        best_params = searchLOG.best_params_
+        best_params = search_log.best_params_
 
     print(f"\nFinal Model: {best_model_name}")
     print(f"Best hyperparameters: {best_params}")
@@ -113,19 +113,19 @@ def main():
     X_train, X_test, y_train, y_test = train_test_split(data, targets, stratify=targets, test_size=0.2, random_state=42)
 
     # Run random forest pipeline and grid search
-    searchRF = rf_train()
-    searchRF.fit(X_train, y_train)
+    search_rf = rf_train()
+    search_rf.fit(X_train, y_train)
 
     # Run logistic regression pipeline and grid search
-    searchLOG = log_train()
-    searchLOG.fit(X_train, y_train)
+    search_log = log_train()
+    search_log.fit(X_train, y_train)
 
     print("\n----------")
-    output_best_score_and_params(searchRF, searchLOG)
+    output_best_score_and_params(search_rf, search_log)
     print("----------")
 
     # Determine best model
-    best_model = find_best_model(searchRF, searchLOG)
+    best_model = find_best_model(search_rf, search_log)
 
     # Test final model
     test_final_model(best_model, X_test, y_test)
